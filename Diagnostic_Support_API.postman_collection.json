@@ -1,0 +1,571 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Diagnostic Support API",
+		"description": "API for therapists to view, edit, and challenge AI-suggested diagnoses. This collection includes all endpoints with realistic clinical examples.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Diagnoses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses"
+					]
+				},
+				"description": "Retrieves all diagnoses in the system, ordered by predicted date (newest first)."
+			},
+			"response": [
+				{
+					"name": "Success - All Diagnoses",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"client_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n    \"diagnosis_name\": \"Generalized Anxiety Disorder\",\n    \"predicted_date\": \"2025-09-30T10:30:00Z\",\n    \"justification\": \"Patient exhibits persistent excessive worry about multiple life events, difficulty controlling worry, restlessness, fatigue, difficulty concentrating, irritability, muscle tension, and sleep disturbance for more than 6 months.\",\n    \"challenged_diagnosis\": null,\n    \"challenged_justification\": null,\n    \"updated_at\": \"2025-09-30T10:30:00Z\"\n  }\n]"
+				}
+			]
+		},
+		{
+			"name": "Get Diagnosis by Client ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses/{{client_id_1}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses",
+						"{{client_id_1}}"
+					]
+				},
+				"description": "Retrieves the most recent diagnosis for a specific client using their UUID."
+			},
+			"response": [
+				{
+					"name": "Success - Client Diagnosis Found",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/550e8400-e29b-41d4-a716-446655440001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"550e8400-e29b-41d4-a716-446655440001"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"client_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"diagnosis_name\": \"Generalized Anxiety Disorder\",\n  \"predicted_date\": \"2025-09-30T10:30:00Z\",\n  \"justification\": \"Patient exhibits persistent excessive worry about multiple life events, difficulty controlling worry, restlessness, fatigue, difficulty concentrating, irritability, muscle tension, and sleep disturbance for more than 6 months. Symptoms cause significant distress and impairment in social and occupational functioning.\",\n  \"challenged_diagnosis\": null,\n  \"challenged_justification\": null,\n  \"updated_at\": \"2025-09-30T10:30:00Z\"\n}"
+				},
+				{
+					"name": "Error - Client Not Found",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/550e8400-e29b-41d4-a716-446655440999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"550e8400-e29b-41d4-a716-446655440999"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"diagnosis not found\"\n}"
+				},
+				{
+					"name": "Error - Invalid UUID",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/invalid-uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"invalid-uuid"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"invalid clientId - must be a valid UUID\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Create New Diagnosis",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"diagnosis_name\": \"Major Depressive Disorder\",\n  \"justification\": \"Patient reports depressed mood most of the day, markedly diminished interest in activities, significant weight loss, insomnia, psychomotor agitation, fatigue, feelings of worthlessness, diminished concentration, and recurrent thoughts of death for over 2 weeks. Symptoms represent a change from previous functioning and cause significant distress.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses/{{client_id_2}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses",
+						"{{client_id_2}}"
+					]
+				},
+				"description": "Creates a new diagnosis for a client. Requires diagnosis_name and justification. Optional challenged_diagnosis and challenged_justification can be included."
+			},
+			"response": [
+				{
+					"name": "Success - Diagnosis Created",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis_name\": \"Major Depressive Disorder\",\n  \"justification\": \"Patient reports depressed mood most of the day, markedly diminished interest in activities, significant weight loss, insomnia, psychomotor agitation, fatigue, feelings of worthlessness, diminished concentration, and recurrent thoughts of death for over 2 weeks.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/550e8400-e29b-41d4-a716-446655440002",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"550e8400-e29b-41d4-a716-446655440002"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"234e5678-e89b-12d3-a456-426614174001\",\n  \"client_id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"diagnosis_name\": \"Major Depressive Disorder\",\n  \"predicted_date\": \"2025-09-30T11:00:00Z\",\n  \"justification\": \"Patient reports depressed mood most of the day, markedly diminished interest in activities, significant weight loss, insomnia, psychomotor agitation, fatigue, feelings of worthlessness, diminished concentration, and recurrent thoughts of death for over 2 weeks.\",\n  \"challenged_diagnosis\": null,\n  \"challenged_justification\": null,\n  \"updated_at\": \"2025-09-30T11:00:00Z\"\n}"
+				},
+				{
+					"name": "Error - Missing Required Fields",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis_name\": \"Major Depressive Disorder\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/550e8400-e29b-41d4-a716-446655440002",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"550e8400-e29b-41d4-a716-446655440002"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"diagnosis_name and justification are required\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Create Diagnosis with Challenge",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"diagnosis_name\": \"Social Anxiety Disorder\",\n  \"justification\": \"Patient experiences marked fear and anxiety in social situations where they may be scrutinized by others, including fear of negative evaluation, embarrassment, and humiliation. Avoids social interactions and public speaking. Symptoms persist for over 6 months and cause significant impairment in work and social functioning.\",\n  \"challenged_diagnosis\": \"Generalized Anxiety Disorder\",\n  \"challenged_justification\": \"While social anxiety is present, patient also reports excessive worry about multiple life domains beyond social situations. The anxiety appears more generalized and may be better classified as GAD with prominent social features.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses/{{client_id_3}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses",
+						"{{client_id_3}}"
+					]
+				},
+				"description": "Example of creating a diagnosis that includes a therapist challenge to the AI recommendation."
+			},
+			"response": [
+				{
+					"name": "Success - Diagnosis with Challenge Created",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis_name\": \"Social Anxiety Disorder\",\n  \"justification\": \"Patient experiences marked fear and anxiety in social situations where they may be scrutinized by others, including fear of negative evaluation, embarrassment, and humiliation.\",\n  \"challenged_diagnosis\": \"Generalized Anxiety Disorder\",\n  \"challenged_justification\": \"While social anxiety is present, patient also reports excessive worry about multiple life domains beyond social situations.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/550e8400-e29b-41d4-a716-446655440003",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"550e8400-e29b-41d4-a716-446655440003"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"345e6789-e89b-12d3-a456-426614174002\",\n  \"client_id\": \"550e8400-e29b-41d4-a716-446655440003\",\n  \"diagnosis_name\": \"Social Anxiety Disorder\",\n  \"predicted_date\": \"2025-09-30T11:30:00Z\",\n  \"justification\": \"Patient experiences marked fear and anxiety in social situations where they may be scrutinized by others, including fear of negative evaluation, embarrassment, and humiliation. Avoids social interactions and public speaking. Symptoms persist for over 6 months and cause significant impairment in work and social functioning.\",\n  \"challenged_diagnosis\": \"Generalized Anxiety Disorder\",\n  \"challenged_justification\": \"While social anxiety is present, patient also reports excessive worry about multiple life domains beyond social situations. The anxiety appears more generalized and may be better classified as GAD with prominent social features.\",\n  \"updated_at\": \"2025-09-30T11:30:00Z\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update Diagnosis - Add Challenge",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"challenged_diagnosis\": \"Adjustment Disorder with Depressed Mood\",\n  \"challenged_justification\": \"Symptoms appeared following recent job loss and divorce. Duration and severity may be better explained by adjustment disorder rather than major depression. Consider psychosocial stressors and timeline of symptom onset. Patient may benefit from supportive therapy focused on coping with life transitions.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses/{{diagnosis_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses",
+						"{{diagnosis_id}}"
+					]
+				},
+				"description": "Updates an existing diagnosis to add a therapist challenge. This represents a common workflow where a therapist reviews an AI diagnosis and provides an alternative."
+			},
+			"response": [
+				{
+					"name": "Success - Challenge Added",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"challenged_diagnosis\": \"Adjustment Disorder with Depressed Mood\",\n  \"challenged_justification\": \"Symptoms appeared following recent job loss and divorce. Duration and severity may be better explained by adjustment disorder rather than major depression.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/234e5678-e89b-12d3-a456-426614174001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"234e5678-e89b-12d3-a456-426614174001"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"234e5678-e89b-12d3-a456-426614174001\",\n  \"client_id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"diagnosis_name\": \"Major Depressive Disorder\",\n  \"predicted_date\": \"2025-09-30T11:00:00Z\",\n  \"justification\": \"Patient reports depressed mood most of the day, markedly diminished interest in activities, significant weight loss, insomnia, psychomotor agitation, fatigue, feelings of worthlessness, diminished concentration, and recurrent thoughts of death for over 2 weeks.\",\n  \"challenged_diagnosis\": \"Adjustment Disorder with Depressed Mood\",\n  \"challenged_justification\": \"Symptoms appeared following recent job loss and divorce. Duration and severity may be better explained by adjustment disorder rather than major depression. Consider psychosocial stressors and timeline of symptom onset. Patient may benefit from supportive therapy focused on coping with life transitions.\",\n  \"updated_at\": \"2025-09-30T12:00:00Z\"\n}"
+				},
+				{
+					"name": "Error - Diagnosis Not Found",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"challenged_diagnosis\": \"Alternative Diagnosis\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/999e9999-e99b-99d9-a999-999999999999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"999e9999-e99b-99d9-a999-999999999999"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"diagnosis not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update Diagnosis - Edit Details",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"diagnosis_name\": \"Attention-Deficit/Hyperactivity Disorder - Combined Type\",\n  \"justification\": \"Patient demonstrates persistent inattention including difficulty sustaining attention, careless mistakes, difficulty organizing tasks, avoids tasks requiring sustained mental effort, loses things, easily distracted, and forgetful. Also shows hyperactivity-impulsivity with fidgeting, difficulty remaining seated, excessive talking, and interrupting others. Symptoms present since childhood and cause impairment in multiple settings including work and relationships.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/diagnoses/{{diagnosis_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"diagnoses",
+						"{{diagnosis_id}}"
+					]
+				},
+				"description": "Updates the core diagnosis details - name and justification. This represents a therapist refining the AI-suggested diagnosis."
+			},
+			"response": [
+				{
+					"name": "Success - Diagnosis Details Updated",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis_name\": \"Attention-Deficit/Hyperactivity Disorder - Combined Type\",\n  \"justification\": \"Patient demonstrates persistent inattention and hyperactivity-impulsivity symptoms present since childhood causing impairment in multiple settings.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/diagnoses/234e5678-e89b-12d3-a456-426614174001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"diagnoses",
+								"234e5678-e89b-12d3-a456-426614174001"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"234e5678-e89b-12d3-a456-426614174001\",\n  \"client_id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"diagnosis_name\": \"Attention-Deficit/Hyperactivity Disorder - Combined Type\",\n  \"predicted_date\": \"2025-09-30T11:00:00Z\",\n  \"justification\": \"Patient demonstrates persistent inattention including difficulty sustaining attention, careless mistakes, difficulty organizing tasks, avoids tasks requiring sustained mental effort, loses things, easily distracted, and forgetful. Also shows hyperactivity-impulsivity with fidgeting, difficulty remaining seated, excessive talking, and interrupting others. Symptoms present since childhood and cause impairment in multiple settings including work and relationships.\",\n  \"challenged_diagnosis\": null,\n  \"challenged_justification\": null,\n  \"updated_at\": \"2025-09-30T12:30:00Z\"\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:4000",
+			"type": "string"
+		},
+		{
+			"key": "client_id_1",
+			"value": "550e8400-e29b-41d4-a716-446655440001",
+			"type": "string"
+		},
+		{
+			"key": "client_id_2",
+			"value": "550e8400-e29b-41d4-a716-446655440002",
+			"type": "string"
+		},
+		{
+			"key": "client_id_3",
+			"value": "550e8400-e29b-41d4-a716-446655440003",
+			"type": "string"
+		},
+		{
+			"key": "client_id_4",
+			"value": "550e8400-e29b-41d4-a716-446655440004",
+			"type": "string"
+		},
+		{
+			"key": "client_id_5",
+			"value": "550e8400-e29b-41d4-a716-446655440005",
+			"type": "string"
+		},
+		{
+			"key": "diagnosis_id",
+			"value": "123e4567-e89b-12d3-a456-426614174000",
+			"type": "string"
+		}
+	]
+}

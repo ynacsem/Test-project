@@ -1,0 +1,403 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Diagnostic Support API",
+    "version": "1.0.0",
+    "description": "API for therapists to view, edit, and challenge AI-suggested diagnoses"
+  },
+  "servers": [
+    { "url": "http://localhost:4000" }
+  ],
+  "components": {
+    "schemas": {
+      "Diagnosis": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique diagnosis identifier"
+          },
+          "client_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client unique identifier"
+          },
+          "diagnosis_name": {
+            "type": "string",
+            "description": "Name of the diagnosis"
+          },
+          "predicted_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the diagnosis was predicted"
+          },
+          "justification": {
+            "type": "string",
+            "description": "Clinical justification for the diagnosis"
+          },
+          "challenged_diagnosis": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alternative diagnosis suggested by therapist"
+          },
+          "challenged_justification": {
+            "type": "string",
+            "nullable": true,
+            "description": "Justification for the alternative diagnosis"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": ["id", "client_id", "diagnosis_name", "predicted_date", "justification"]
+      },
+      "CreateDiagnosisRequest": {
+        "type": "object",
+        "properties": {
+          "diagnosis_name": {
+            "type": "string",
+            "description": "Name of the diagnosis"
+          },
+          "justification": {
+            "type": "string",
+            "description": "Clinical justification for the diagnosis"
+          },
+          "challenged_diagnosis": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alternative diagnosis"
+          },
+          "challenged_justification": {
+            "type": "string",
+            "nullable": true,
+            "description": "Justification for alternative diagnosis"
+          }
+        },
+        "required": ["diagnosis_name", "justification"]
+      },
+      "UpdateDiagnosisRequest": {
+        "type": "object",
+        "properties": {
+          "diagnosis_name": {
+            "type": "string",
+            "description": "Name of the diagnosis"
+          },
+          "justification": {
+            "type": "string",
+            "description": "Clinical justification for the diagnosis"
+          },
+          "challenged_diagnosis": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alternative diagnosis"
+          },
+          "challenged_justification": {
+            "type": "string",
+            "nullable": true,
+            "description": "Justification for alternative diagnosis"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/diagnoses": {
+      "get": {
+        "summary": "Get all diagnoses",
+        "description": "Retrieve all diagnoses ordered by predicted date (newest first)",
+        "responses": {
+          "200": {
+            "description": "List of all diagnoses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Diagnosis"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "client_id": "550e8400-e29b-41d4-a716-446655440001",
+                    "diagnosis_name": "Generalized Anxiety Disorder",
+                    "predicted_date": "2025-09-30T10:30:00Z",
+                    "justification": "Patient exhibits persistent excessive worry...",
+                    "challenged_diagnosis": null,
+                    "challenged_justification": null,
+                    "updated_at": "2025-09-30T10:30:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/diagnoses/{clientId}": {
+      "get": {
+        "summary": "Get latest diagnosis for a client",
+        "description": "Retrieve the most recent diagnosis for a specific client",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Client UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diagnosis found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "client_id": "550e8400-e29b-41d4-a716-446655440001",
+                  "diagnosis_name": "Generalized Anxiety Disorder",
+                  "predicted_date": "2025-09-30T10:30:00Z",
+                  "justification": "Patient exhibits persistent excessive worry about multiple life events...",
+                  "challenged_diagnosis": null,
+                  "challenged_justification": null,
+                  "updated_at": "2025-09-30T10:30:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid client ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "invalid clientId - must be a valid UUID"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Diagnosis not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "diagnosis not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new diagnosis",
+        "description": "Create a new diagnosis for a client",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Client UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDiagnosisRequest"
+              },
+              "example": {
+                "diagnosis_name": "Major Depressive Disorder",
+                "justification": "Patient reports depressed mood most of the day...",
+                "challenged_diagnosis": "Adjustment Disorder with Depressed Mood",
+                "challenged_justification": "Symptoms appeared following recent job loss..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Diagnosis created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Missing required fields",
+                    "value": {
+                      "error": "diagnosis_name and justification are required"
+                    }
+                  },
+                  "invalid_uuid": {
+                    "summary": "Invalid UUID format",
+                    "value": {
+                      "error": "invalid clientId - must be a valid UUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/diagnoses/{id}": {
+      "put": {
+        "summary": "Update an existing diagnosis",
+        "description": "Update any fields of an existing diagnosis record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Diagnosis UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDiagnosisRequest"
+              },
+              "example": {
+                "challenged_diagnosis": "Adjustment Disorder with Depressed Mood",
+                "challenged_justification": "Symptoms appeared following recent stressors and may be better explained by adjustment disorder rather than major depression."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diagnosis updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "nothing to update"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Diagnosis not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "diagnosis not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
